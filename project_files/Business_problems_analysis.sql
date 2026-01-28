@@ -10,7 +10,7 @@ ORDER BY 1 DESC
 --2. What is the total number of units sold by each store?
 
 SELECT 
-    count(sale_id) AS total_sales,
+    sum(quantity) AS total_sales,
     store_id
 FROM sales
 GROUP BY 2
@@ -24,8 +24,7 @@ FROM sales
 WHERE sale_date BETWEEN '2023-12-1' AND '2023-12-31'
 
 --4. How many stores have never had a warranty claim filed against any of their products?
-SELECT 
-    COUNT(s.store_id)
+SELECT DISTINCT s.store_id
 FROM warranty w
 RIGHT JOIN sales s
     ON s.sale_id = w.sale_id
@@ -45,7 +44,7 @@ ORDER BY 2 DESC
 SELECT
     st.store_id,
     st.store_name,
-    count(s.sale_id)
+    SUM(quantity)
 FROM sales s
 JOIN stores st
     ON st.store_id = s.store_id
@@ -56,11 +55,9 @@ ORDER BY 3 DESC
 
 --7. Count the number of unique products sold in the last year.
 SELECT
-    product_id,
-    count(product_id) AS product_count 
+    COUNT(DISTINCT product_id)
 FROM sales
-GROUP BY 1
-ORDER BY 2 DESC
+WHERE sale_date BETWEEN '2023-01-01' AND '2023-12-31'
 
 --8. What is the average price of products in each category?
 
