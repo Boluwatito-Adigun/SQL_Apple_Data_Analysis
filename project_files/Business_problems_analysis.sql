@@ -87,3 +87,85 @@ FROM warranty
 WHERE claim_date BETWEEN '2020-01-01' AND '2020-12-31'
 
 --10. Identify each store and best selling day based on highest qty sold
+
+WITH best_selling_day AS 
+(
+    SELECT
+        store_id,
+        TO_CHAR(sale_date, 'Day') AS day,
+        sum(quantity) AS total_sales,
+        dense_rank() OVER(PARTITION BY store_id ORDER BY sum(quantity) DESC) AS rank
+    FROM sales
+    GROUP BY 
+        1, 2
+    ORDER BY 
+        1 DESC,
+        3 DESC
+)
+
+SELECT
+    store_id,
+    day,
+    total_sales
+FROM best_selling_day
+WHERE rank = 1
+ORDER BY total_sales DESC
+
+--11. Identify least selling product of each country for each year based on total unit sold
+WITH least_selling_pdt AS 
+(
+    SELECT
+        st.country AS country,
+        pr.product_name AS product_name,
+        Extract (Year FROM sale_date) AS Year,
+        sum(quantity) AS total_unit_sold,
+        dense_rank() OVER(PARTITION BY country, Extract (Year FROM sale_date) ORDER BY sum(quantity)) AS rank
+    FROM sales s
+    JOIN stores st
+        ON st.store_id = s.store_id
+    JOIN products pr
+        ON s.product_id = pr.product_id
+    GROUP BY 
+        product_name, Year, country
+    ORDER BY 
+        country,
+        Year
+)
+SELECT *
+FROM least_selling_pdt
+WHERE rank = 1
+
+--12. How many warranty claims were filed within 180 days of a product sale?
+
+SELECT
+    count(claim_id) AS number_of_claims
+FROM 
+    warranty w
+JOIN sales s
+    ON s.sale_id = w.sale_id
+WHERE w.claim_date  - s.sale_date <= 180
+
+
+--13. How many warranty claims have been filed for products launched in 2023?
+
+SELECT
+    count(claim_id) AS number_of_claims
+FROM 
+    warranty w
+JOIN sales s
+    ON s.sale_id = w.sale_id
+JOIN products pr
+    ON pr.product_id = s.product_id
+WHERE Extract (Year FROM launch_date) = '2023'
+
+
+SELECT *
+FROM products
+
+
+--14. List the months in the last 3 years where sales exceeded 5000 units from usa.
+
+
+
+
+--15. Which product category had the most warranty claims filed in the last 2 years
