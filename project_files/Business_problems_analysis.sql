@@ -159,13 +159,38 @@ JOIN products pr
 WHERE Extract (Year FROM launch_date) = '2023'
 
 
-SELECT *
-FROM products
-
-
 --14. List the months in the last 3 years where sales exceeded 5000 units from usa.
-
-
+SELECT
+        st.country AS country,
+        TO_CHAR(sale_date, 'Month') AS Month,
+        Extract (Year FROM sale_date) AS Year,
+        sum(quantity) AS total_unit_sold
+    FROM sales s
+    JOIN stores st
+        ON st.store_id = s.store_id
+    WHERE 
+        country = 'USA'
+    GROUP BY 
+        Year, country, Month
+    HAVING 
+        sum(quantity) > 5000
+    ORDER BY 
+        country,
+        Month,
+        Year
 
 
 --15. Which product category had the most warranty claims filed in the last 2 years
+
+SELECT
+    pr.category_id AS product_category,
+    count(claim_id) AS number_of_claims
+FROM 
+    warranty w
+JOIN sales s
+    ON s.sale_id = w.sale_id
+JOIN products pr
+    ON pr.product_id = s.product_id
+GROUP BY
+    product_category
+
