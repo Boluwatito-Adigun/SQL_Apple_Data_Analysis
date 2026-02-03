@@ -194,3 +194,4 @@ JOIN products pr
 GROUP BY
     product_category
 
+--15. Which product category had the most warranty claims filed in the last 2 years
