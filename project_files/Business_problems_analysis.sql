@@ -194,4 +194,38 @@ JOIN products pr
 GROUP BY
     product_category
 
---15. Which product category had the most warranty claims filed in the last 2 years
+--16. Determine the percentage chance of receiving claims after each purchase for each country.
+
+SELECT 
+    *,
+    ROUND(total_claims::numeric / total_sales::numeric * 100, 2) AS chance_of_receiving_claims
+FROM
+(
+SELECT
+    st.country,
+    count(w.claim_id) AS total_claims,
+    count(s.sale_id) AS total_sales
+FROM warranty w
+RIGHT JOIN sales s 
+    ON w.sale_id = s.sale_id
+RIGHT JOIN stores st
+    ON s.store_id = st.store_id
+GROUP BY
+    st.country
+) AS t1
+
+ORDER BY chance_of_receiving_claims DESC
+
+
+--17. Analyze each stores year by year growth ratio
+
+
+/*18. What is the correlation between product price and warranty claims for products sold 
+in the last five years? (Segment based on diff price)*/
+
+
+/*19. Identify the store with the highest percentage of "Paid Repaired" claims in relation to total
+claims filed.*/
+
+/*20.Write SQL query to calculate the monthly running total of sales for each store over the past
+four years and compare the trends across this period?*/
