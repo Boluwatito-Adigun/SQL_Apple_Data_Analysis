@@ -220,6 +220,48 @@ ORDER BY chance_of_receiving_claims DESC
 --17. Analyze each stores year by year growth ratio
 
 
+WITH revenue AS 
+(
+    SELECT
+        s.store_id,
+        Extract (Year FROM s.sale_date) AS Years,
+        SUM(s.quantity * pr.price) AS total_revenue
+    FROM sales s
+    JOIN products pr
+        ON pr.product_id = s.product_id
+    GROUP BY 
+        Years,
+        store_id
+    ORDER BY 
+        store_id,
+        Years
+),
+
+growth_ratio AS 
+
+(
+    SELECT
+        store_id,
+        Years,
+        total_revenue AS current_sales,
+        LAG(total_revenue, 1) OVER(PARTITION BY store_id) AS previous_sales
+    FROM revenue
+)
+
+SELECT
+    store_id,
+    Years,
+    current_sales,
+    previous_sales,
+    ROUND((current_sales - previous_sales)::numeric / previous_sales::numeric * 100, 2) AS growth_ratio
+FROM growth_ratio
+
+
+
+SELECT *
+FROM products
+
+
 /*18. What is the correlation between product price and warranty claims for products sold 
 in the last five years? (Segment based on diff price)*/
 
