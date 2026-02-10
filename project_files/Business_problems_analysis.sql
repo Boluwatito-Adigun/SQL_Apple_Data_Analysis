@@ -257,17 +257,56 @@ SELECT
 FROM growth_ratio
 
 
-
-SELECT *
-FROM products
-
-
 /*18. What is the correlation between product price and warranty claims for products sold 
 in the last five years? (Segment based on diff price)*/
 
 
+
+
 /*19. Identify the store with the highest percentage of "Paid Repaired" claims in relation to total
 claims filed.*/
+
+WITH t_claims AS 
+(
+SELECT 
+    st.store_name AS store_name,
+    count(claim_id) AS total_claims
+FROM 
+    warranty w
+JOIN sales s 
+    ON s.sale_id = w.sale_id
+JOIN stores st
+    ON s.store_id = st.store_id
+GROUP BY 
+    st.store_name
+),
+
+pr_claims AS
+(
+SELECT 
+    st.store_name AS store_name,
+    count(claim_id) AS paid_repaired_claims
+FROM 
+    warranty w
+JOIN sales s 
+    ON s.sale_id = w.sale_id
+JOIN stores st
+    ON s.store_id = st.store_id
+WHERE repair_status = 'Paid Repaired'
+GROUP BY 
+    st.store_name
+)
+
+SELECT
+    prc.store_name,
+    total_claims,
+    paid_repaired_claims,
+    ROUND(paid_repaired_claims::numeric / total_claims::numeric * 100, 2) AS percentage
+FROM
+    t_claims tc   
+JOIN pr_claims prc
+    ON tc.store_name = prc.store_name
+
 
 /*20.Write SQL query to calculate the monthly running total of sales for each store over the past
 four years and compare the trends across this period?*/
