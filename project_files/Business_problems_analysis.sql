@@ -257,11 +257,39 @@ SELECT
 FROM growth_ratio
 
 
-/*18. What is the correlation between product price and warranty claims for products sold 
-in the last five years? (Segment based on diff price)*/
+/*18. What is the correlation between product price and warranty claims for products sold? (Segment based on diff price)*/
 
 
+WITH groupings AS 
 
+(
+    SELECT  
+        claim_id,
+        pr.price,
+        CASE
+            WHEN pr.price < 500 THEN 'Less Expensive'
+            WHEN pr.price BETWEEN 500 AND 1000 THEN 'Mid Expensive'
+            ELSE 'Highly Expensive'
+        END AS price_category
+    FROM 
+        products pr 
+    JOIN sales s
+        ON s.product_id = pr.product_id
+    JOIN warranty w
+        ON w.sale_id = s.sale_id
+    GROUP BY 
+        pr.price,
+        claim_id
+) 
+
+SELECT
+    price_category,
+    count(claim_id) AS count
+FROM groupings
+GROUP BY 
+    price_category
+ORDER BY 
+    count DESC
 
 /*19. Identify the store with the highest percentage of "Paid Repaired" claims in relation to total
 claims filed.*/
