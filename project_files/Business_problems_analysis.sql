@@ -339,6 +339,8 @@ JOIN pr_claims prc
 /*20.Write SQL query to calculate the monthly running total of sales for each store over the past
 four years and compare the trends across this period?*/
 
+With monthly_sales AS
+(
 SELECT 
     st.store_name,
     sum(pr.price * s.quantity) AS total_sales,
@@ -357,3 +359,36 @@ ORDER BY
     st.store_name,
     years,
     months
+)
+
+SELECT 
+    store_name,
+    years,
+    months,
+    total_sales,
+    SUM(total_sales) OVER(Partition by store_name ORDER BY years, months) AS running_total
+FROM
+    monthly_sales
+
+/*21.Analyze sales trends of product over time, segmented into key time periods: from launch to 6
+months, 6-12 months, 12-18 months, and beyond 18 months*/
+
+SELECT 
+    pr.product_name,
+    CASE
+        WHEN s.sale_date BETWEEN pr.launch_date AND pr.launch_date + INTERVAL '6 month' THEN '0-6 months'
+        WHEN s.sale_date BETWEEN pr.launch_date + INTERVAL '6 month' AND pr.launch_date + INTERVAL '12 month'THEN '6-12 months'
+        WHEN s.sale_date BETWEEN pr.launch_date + INTERVAL '12 month' AND pr.launch_date + INTERVAL '18 month'THEN '12-18 months'
+        ELSE 'beyond 18 months'
+    END AS plc,
+    sum(s.quantity) AS total_sales
+FROM sales s 
+JOIN products pr 
+    ON pr.product_id = s.product_id
+GROUP BY
+    pr.product_name,
+    plc
+ORDER BY 
+    pr.product_name,
+    total_sales DESC
+
